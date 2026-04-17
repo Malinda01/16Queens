@@ -19,6 +19,7 @@ class ChessApp:
     def setup_ui(self):
         self.root.configure(bg="#1e1e1e")
 
+        # Title
         title = tk.Label(
             self.root,
             text="♛ Sixteen Queens Puzzle ♛",
@@ -36,6 +37,16 @@ class ChessApp:
 
         self.name_entry = tk.Entry(frame, bg="#2b2b2b", fg="white")
         self.name_entry.pack(side=tk.LEFT, padx=10)
+
+        # Queen Counter
+        self.counter_label = tk.Label(
+            self.root,
+            text="Queens: 0/8",
+            font=("Helvetica", 12, "bold"),
+            fg="white",
+            bg="#1e1e1e",
+        )
+        self.counter_label.pack()
 
         # Board
         self.grid_frame = tk.Frame(self.root)
@@ -59,7 +70,7 @@ class ChessApp:
                 btn.grid(row=r, column=c)
                 self.btns[r][c] = btn
 
-        # Buttons
+        # Bottom buttons
         bottom = tk.Frame(self.root, bg="#1e1e1e")
         bottom.pack(pady=10)
 
@@ -91,16 +102,23 @@ class ChessApp:
             self.selected_queens.append(pos)
             self.btns[r][c].config(text="♛", bg="#ff4d4d", fg="white")
 
-    def check(self):
-        name = self.name_entry.get()
+        # Update counter
+        self.counter_label.config(text=f"Queens: {len(self.selected_queens)}/8")
 
-        if not name and len(self.selected_queens) != 8:
-            messagebox.showwarning("Error", "place 8 queens!")
+    def check(self):
+        name = self.name_entry.get().strip()
+
+        # Must enter name
+        if not name:
+            messagebox.showwarning("Error", "Please enter your name!")
             return
 
-        # if not name:
-        #     messagebox.showwarning("Error", "Please enter name!")
+        # Must place exactly 8 queens
+        if len(self.selected_queens) != 8:
+            messagebox.showwarning("Error", "You must place exactly 8 queens!")
+            return
 
+        # Validate solution
         if not self.logic.is_valid(self.selected_queens):
             messagebox.showerror("Invalid", "Queens attack each other!")
             return
