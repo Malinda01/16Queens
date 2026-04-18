@@ -5,6 +5,8 @@ class DatabaseManager:
     def __init__(self, db_name="chess_game.db"):
         self.db_name = db_name
         self.init_db()
+        print("Using DB:", self.db_name)
+        print("CLEARING DB:", self.db_name)
 
     def init_db(self):
         with sqlite3.connect(self.db_name) as conn:
@@ -72,11 +74,11 @@ class DatabaseManager:
     def get_player_solution_count(self):
         with sqlite3.connect(self.db_name) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM solutions")
+            cursor.execute("SELECT COUNT(*) FROM Player_Responses")
             return cursor.fetchone()[0]
 
     def clear_player_responses(self):
         with sqlite3.connect(self.db_name) as conn:
             cursor = conn.cursor()
-            cursor.execute("DELETE FROM solutions")
+            cursor.execute("DELETE FROM Player_Responses")
             conn.commit()
