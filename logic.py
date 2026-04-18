@@ -3,7 +3,7 @@ import threading
 
 
 class NQueensLogic:
-    def __init__(self, size=16, max_solutions=20):
+    def __init__(self, size=16, max_solutions=30):
         self.size = size
         self.max_solutions = max_solutions
 
@@ -47,19 +47,36 @@ class NQueensLogic:
         start = time.time()
 
         def task(start_col):
-            local_count = [0]
             local_solutions = []
-            self.backtrack_solver(1, [(0, start_col)], local_count, local_solutions)
 
-            with lock:
-                total[0] += local_count[0]
-                solutions.extend(local_solutions)
+            def limited_backtrack(row, current):
+                # STOP if global limit reached
+                with lock:
+                    if total[0] >= self.max_solutions:
+                        return
 
+                if row == self.size:
+                    with lock:
+                        if total[0] < self.max_solutions:
+                            total[0] += 1
+                            solutions.append(current.copy())
+                    return
+
+                for col in range(self.size):
+                    temp = current + [(row, col)]
+
+                    if self.is_valid(temp):
+                        limited_backtrack(row + 1, temp)
+
+            limited_backtrack(1, [(0, start_col)])
+
+        # Create threads
         for c in range(self.size):
             t = threading.Thread(target=task, args=(c,))
             threads.append(t)
             t.start()
 
+        # Wait for all
         for t in threads:
             t.join()
 

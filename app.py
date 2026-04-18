@@ -4,11 +4,16 @@ import sqlite3
 from database import DatabaseManager
 from logic import NQueensLogic
 
+MAX_SOLUTIONS = 30
+
 
 class ChessApp:
     def __init__(self, root):
         self.root = root
         self.root.title("16 Queens Puzzle")
+
+        # ✅ SET WINDOW SIZE
+        self.root.geometry("1100x800")
 
         self.db = DatabaseManager()
         self.logic = NQueensLogic(16)
@@ -58,8 +63,10 @@ class ChessApp:
                     self.grid_frame,
                     width=3,
                     height=1,
+                    font=("Arial", 14, "bold"),
                     bg=color,
-                    relief=tk.FLAT,
+                    activebackground=color,
+                    relief="flat",
                     command=lambda r=r, c=c: self.on_click(r, c),
                 )
                 btn.grid(row=r, column=c)
@@ -71,6 +78,7 @@ class ChessApp:
         tk.Button(
             bottom, text="CHECK", bg="#28a745", fg="white", command=self.check
         ).pack(side=tk.LEFT, padx=10)
+
         tk.Button(
             bottom,
             text="PERFORMANCE",
@@ -91,6 +99,12 @@ class ChessApp:
             self.selected_queens.append(pos)
             self.btns[r][c].config(text="♛", bg="#ff4d4d", fg="white")
 
+            if len(self.selected_queens) == 8:
+                messagebox.showinfo("Done", "All 8 queens placed!")
+
+        else:
+            messagebox.showwarning("Limit", "You can only place 8 queens!")
+
         self.counter_label.config(text=f"Queens: {len(self.selected_queens)}/8")
 
     def check(self):
@@ -108,36 +122,36 @@ class ChessApp:
             messagebox.showerror("Invalid", "Queens attack each other!")
             return
 
-        # 🔥 NEW LOGIC: Check if all solutions found
-        total = 20  # since max_solutions = 20
-
-        found = self.db.get_player_solution_count()
-
-        if found >= 20:
-            messagebox.showinfo(
-                "Reset", "All 20 solutions found! Resetting submissions..."
-            )
-            self.db.clear_player_responses()
-            return
+        answer = ",".join([f"{r}-{c}" for r, c in sorted(self.selected_queens)])
 
         try:
-            self.db.save_player_response(name, str(sorted(self.selected_queens)))
+            self.db.save_player_response(name, answer)
             messagebox.showinfo("Success", "Saved!")
+            self.reset_board()
         except sqlite3.IntegrityError:
             messagebox.showerror("Duplicate", "Solution already exists!")
+            return
+
+        # Check AFTER insert
+        current = self.db.get_player_solution_count()
+
+        if current >= MAX_SOLUTIONS:
+            self.show_clear_flag_popup()
 
     def performance(self):
-        demo = NQueensLogic(16, max_solutions=20)
+        demo = NQueensLogic(16, max_solutions=MAX_SOLUTIONS)
 
         s_count, s_time, s_solutions = demo.run_sequential()
         t_count, t_time, t_solutions = demo.run_threaded()
 
         self.db.save_performance_stats(s_count, t_count, s_time, t_time)
 
-        # Save solutions
-        for sol in s_solutions:
+        # Save all unique solutions
+        all_solutions = set(map(str, s_solutions + t_solutions))
+
+        for sol in all_solutions:
             try:
-                self.db.save_solution(str(sol))
+                self.db.save_solution(sol)
             except:
                 pass
 
@@ -147,6 +161,50 @@ class ChessApp:
             "Performance",
             f"Sequential: {s_time:.4f}s\nThreaded: {t_time:.4f}s\nFaster: {faster}",
         )
+
+    def show_clear_flag_popup(self):
+        popup = tk.Toplevel(self.root)
+        popup.title("Max Solutions Reached")
+        popup.geometry("300x150")
+        popup.configure(bg="#1e1e1e")
+
+        tk.Label(
+            popup,
+            text="30 solutions reached!\nYou can now reset the system.",
+            fg="white",
+            bg="#1e1e1e",
+            font=("Helvetica", 11),
+        ).pack(pady=20)
+
+        def clear_flag():
+            self.db.clear_player_responses()
+            messagebox.showinfo("Cleared", "Player responses reset!")
+            popup.destroy()
+
+        tk.Button(
+            popup,
+            text="Clear Flag",
+            bg="#dc3545",
+            fg="white",
+            command=clear_flag,
+            width=15,
+        ).pack(pady=10)
+
+    def reset_board(self):
+        # Clear selected queens
+        self.selected_queens.clear()
+
+        # Reset all buttons
+        for r in range(16):
+            for c in range(16):
+                color = "#eeeeee" if (r + c) % 2 == 0 else "#666666"
+                self.btns[r][c].config(text="", bg=color)
+
+        # Reset counter
+        self.counter_label.config(text="Queens: 0/8")
+
+        # Clear name field
+        self.name_entry.delete(0, tk.END)
 
 
 if __name__ == "__main__":

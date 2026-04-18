@@ -5,8 +5,6 @@ class DatabaseManager:
     def __init__(self, db_name="chess_game.db"):
         self.db_name = db_name
         self.init_db()
-        print("Using DB:", self.db_name)
-        print("CLEARING DB:", self.db_name)
 
     def init_db(self):
         with sqlite3.connect(self.db_name) as conn:
@@ -63,13 +61,6 @@ class DatabaseManager:
                 (s_count, t_count, s_time, t_time),
             )
             conn.commit()
-
-    # Helper methods to clear flag
-    def get_total_solutions_count(self):
-        with sqlite3.connect(self.db_name) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM Solutions")
-            return cursor.fetchone()[0]
 
     def get_player_solution_count(self):
         with sqlite3.connect(self.db_name) as conn:
