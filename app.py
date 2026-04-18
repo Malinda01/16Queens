@@ -114,6 +114,17 @@ class ChessApp:
         except sqlite3.IntegrityError:
             messagebox.showerror("Duplicate", "Solution already exists!")
 
+        # 🔥 NEW LOGIC: Check if all solutions found
+        total = self.db.get_total_solutions_count()
+        found = self.db.get_player_solution_count()
+
+        if total > 0 and found >= total:
+            messagebox.showinfo(
+                "All Found!",
+                "All solutions discovered! Resetting duplicate restriction...",
+            )
+        self.db.clear_player_responses()
+
     def performance(self):
         demo = NQueensLogic(16, max_solutions=20)
 

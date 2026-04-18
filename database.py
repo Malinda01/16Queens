@@ -61,3 +61,22 @@ class DatabaseManager:
                 (s_count, t_count, s_time, t_time),
             )
             conn.commit()
+
+    # Helper methods to clear flag
+    def get_total_solutions_count(self):
+        with sqlite3.connect(self.db_name) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM Solutions")
+            return cursor.fetchone()[0]
+
+    def get_player_solution_count(self):
+        with sqlite3.connect(self.db_name) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM solutions")
+            return cursor.fetchone()[0]
+
+    def clear_player_responses(self):
+        with sqlite3.connect(self.db_name) as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM solutions")
+            conn.commit()
