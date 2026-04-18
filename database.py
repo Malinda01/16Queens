@@ -4,40 +4,60 @@ import sqlite3
 class DatabaseManager:
     def __init__(self, db_name="chess_game.db"):
         self.db_name = db_name
-        self.init_db()  # Initialize tables upon instantiation
+        self.init_db()
 
     def init_db(self):
-        # Establish connection to the SQLite file
         with sqlite3.connect(self.db_name) as conn:
             cursor = conn.cursor()
-            # Create table for player solutions with a UNIQUE constraint on the answer string
+
             cursor.execute(
-                "CREATE TABLE IF NOT EXISTS Player_Responses (name TEXT, answer TEXT UNIQUE)"
+                """
+                CREATE TABLE IF NOT EXISTS Player_Responses (
+                    name TEXT,
+                    answer TEXT UNIQUE
+                )
+            """
             )
-            # Create table for performance benchmarking results
+
             cursor.execute(
-                """CREATE TABLE IF NOT EXISTS Program_Respond 
-                              (id INTEGER PRIMARY KEY AUTOINCREMENT, sequential INTEGER, 
-                               threaded INTEGER, num_of_max_solutions INTEGER, 
-                               time_taken_seq REAL, time_taken_thread REAL)"""
+                """
+                CREATE TABLE IF NOT EXISTS Solutions (
+                    solution TEXT UNIQUE
+                )
+            """
             )
+
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS Program_Respond (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    sequential INTEGER,
+                    threaded INTEGER,
+                    time_taken_seq REAL,
+                    time_taken_thread REAL
+                )
+            """
+            )
+
             conn.commit()
 
-    def save_player_response(self, name, sorted_ans):
-        # Persist a specific player's valid Queen placement
+    def save_player_response(self, name, answer):
         with sqlite3.connect(self.db_name) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO Player_Responses VALUES (?, ?)", (name, sorted_ans)
-            )
+            cursor.execute("INSERT INTO Player_Responses VALUES (?, ?)", (name, answer))
+            conn.commit()
+
+    def save_solution(self, solution):
+        with sqlite3.connect(self.db_name) as conn:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO Solutions VALUES (?)", (solution,))
             conn.commit()
 
     def save_performance_stats(self, s_count, t_count, s_time, t_time):
-        # Persist the timing results from the performance test
         with sqlite3.connect(self.db_name) as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "INSERT INTO Program_Respond (sequential, threaded, num_of_max_solutions, time_taken_seq, time_taken_thread) VALUES (?,?,?,?,?)",
-                (s_count, t_count, s_count, s_time, t_time),
+                "INSERT INTO Program_Respond (sequential, threaded, time_taken_seq, time_taken_thread) VALUES (?,?,?,?)",
+                (s_count, t_count, s_time, t_time),
             )
             conn.commit()

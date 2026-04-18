@@ -19,7 +19,6 @@ class ChessApp:
     def setup_ui(self):
         self.root.configure(bg="#1e1e1e")
 
-        # Title
         title = tk.Label(
             self.root,
             text="♛ Sixteen Queens Puzzle ♛",
@@ -29,7 +28,6 @@ class ChessApp:
         )
         title.pack(pady=10)
 
-        # Name input
         frame = tk.Frame(self.root, bg="#1e1e1e")
         frame.pack()
 
@@ -38,7 +36,6 @@ class ChessApp:
         self.name_entry = tk.Entry(frame, bg="#2b2b2b", fg="white")
         self.name_entry.pack(side=tk.LEFT, padx=10)
 
-        # Queen Counter
         self.counter_label = tk.Label(
             self.root,
             text="Queens: 0/8",
@@ -48,7 +45,6 @@ class ChessApp:
         )
         self.counter_label.pack()
 
-        # Board
         self.grid_frame = tk.Frame(self.root)
         self.grid_frame.pack(pady=10)
 
@@ -66,22 +62,15 @@ class ChessApp:
                     relief=tk.FLAT,
                     command=lambda r=r, c=c: self.on_click(r, c),
                 )
-
                 btn.grid(row=r, column=c)
                 self.btns[r][c] = btn
 
-        # Bottom buttons
         bottom = tk.Frame(self.root, bg="#1e1e1e")
         bottom.pack(pady=10)
 
         tk.Button(
-            bottom,
-            text="CHECK",
-            bg="#28a745",
-            fg="white",
-            command=self.check,
+            bottom, text="CHECK", bg="#28a745", fg="white", command=self.check
         ).pack(side=tk.LEFT, padx=10)
-
         tk.Button(
             bottom,
             text="PERFORMANCE",
@@ -102,44 +91,49 @@ class ChessApp:
             self.selected_queens.append(pos)
             self.btns[r][c].config(text="♛", bg="#ff4d4d", fg="white")
 
-        # Update counter
         self.counter_label.config(text=f"Queens: {len(self.selected_queens)}/8")
 
     def check(self):
         name = self.name_entry.get().strip()
 
-        # Must enter name
         if not name:
-            messagebox.showwarning("Error", "Please enter your name!")
+            messagebox.showwarning("Error", "Enter your name!")
             return
 
-        # Must place exactly 8 queens
         if len(self.selected_queens) != 8:
-            messagebox.showwarning("Error", "You must place exactly 8 queens!")
+            messagebox.showwarning("Error", "Place exactly 8 queens!")
             return
 
-        # Validate solution
         if not self.logic.is_valid(self.selected_queens):
             messagebox.showerror("Invalid", "Queens attack each other!")
             return
 
         try:
             self.db.save_player_response(name, str(sorted(self.selected_queens)))
-            messagebox.showinfo("Success", "Solution saved!")
+            messagebox.showinfo("Success", "Saved!")
         except sqlite3.IntegrityError:
             messagebox.showerror("Duplicate", "Solution already exists!")
 
     def performance(self):
-        demo = NQueensLogic(8)
+        demo = NQueensLogic(16, max_solutions=20)
 
-        s_count, s_time = demo.run_sequential()
-        t_count, t_time = demo.run_threaded()
+        s_count, s_time, s_solutions = demo.run_sequential()
+        t_count, t_time, t_solutions = demo.run_threaded()
 
         self.db.save_performance_stats(s_count, t_count, s_time, t_time)
 
+        # Save solutions
+        for sol in s_solutions:
+            try:
+                self.db.save_solution(str(sol))
+            except:
+                pass
+
+        faster = "Sequential" if s_time < t_time else "Threaded"
+
         messagebox.showinfo(
             "Performance",
-            f"Sequential: {s_time:.4f}s\nThreaded: {t_time:.4f}s",
+            f"Sequential: {s_time:.4f}s\nThreaded: {t_time:.4f}s\nFaster: {faster}",
         )
 
 

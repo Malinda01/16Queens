@@ -3,59 +3,64 @@ import threading
 
 
 class NQueensLogic:
-    def __init__(self, size=16):
-        self.size = size  # Define board dimensions (N x N)
+    def __init__(self, size=16, max_solutions=20):
+        self.size = size
+        self.max_solutions = max_solutions
 
-    def is_valid(self, queens_array):
-        """Checks for collisions between queens in rows, columns, or diagonals."""
-        for i in range(len(queens_array)):  # index of first queen
-            for j in range(i + 1, len(queens_array)):  # index of second queen
-                r1, c1 = queens_array[i]
-                r2, c2 = queens_array[j]
-                # If rows match, cols match, or absolute diff of rows == absolute diff of cols (diagonal)
+    def is_valid(self, queens):
+        for i in range(len(queens)):
+            for j in range(i + 1, len(queens)):
+                r1, c1 = queens[i]
+                r2, c2 = queens[j]
                 if r1 == r2 or c1 == c2 or abs(r1 - r2) == abs(c1 - c2):
                     return False
         return True
 
-    def backtrack_solver(self, row, current_queens, results):
-        """Depth-First Search (DFS) on the state-space tree."""
+    def backtrack_solver(self, row, current, results, solutions):
+        if results[0] >= self.max_solutions:
+            return
+
         if row == self.size:
-            results[0] += 1  # Base case: All queens placed, increment solution counter
+            results[0] += 1
+            solutions.append(current.copy())
             return
 
         for col in range(self.size):
-            temp_queens = current_queens + [(row, col)]
-            # Pruning the tree: only recurse if the current placement is valid
-            if self.is_valid(temp_queens):
-                self.backtrack_solver(row + 1, temp_queens, results)
+            temp = current + [(row, col)]
+            if self.is_valid(temp):
+                self.backtrack_solver(row + 1, temp, results, solutions)
 
     def run_sequential(self):
-        """Solves the puzzle using a single execution thread."""
         results = [0]
+        solutions = []
         start = time.time()
-        self.backtrack_solver(0, [], results)
-        return results[0], time.time() - start
+
+        self.backtrack_solver(0, [], results, solutions)
+
+        return results[0], time.time() - start, solutions
 
     def run_threaded(self):
-        """Parallelizes the search by assigning each starting column to a thread."""
-        total_solutions = [0]
-        lock = threading.Lock()  # Ensures thread-safe updates to the total counter
+        total = [0]
+        solutions = []
+        lock = threading.Lock()
         threads = []
         start = time.time()
 
-        def thread_task(start_col):
-            local_res = [0]
-            # Each thread handles one branch of the root node
-            self.backtrack_solver(1, [(0, start_col)], local_res)
+        def task(start_col):
+            local_count = [0]
+            local_solutions = []
+            self.backtrack_solver(1, [(0, start_col)], local_count, local_solutions)
+
             with lock:
-                total_solutions[0] += local_res[0]
+                total[0] += local_count[0]
+                solutions.extend(local_solutions)
 
         for c in range(self.size):
-            t = threading.Thread(target=thread_task, args=(c,))
+            t = threading.Thread(target=task, args=(c,))
             threads.append(t)
             t.start()
 
         for t in threads:
-            t.join()  # Wait for all threads to complete before returning
+            t.join()
 
-        return total_solutions[0], time.time() - start
+        return total[0], time.time() - start, solutions
