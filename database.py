@@ -1,3 +1,4 @@
+# ---Malinda--- #
 import sqlite3
 
 
@@ -56,6 +57,9 @@ class DatabaseManager:
         conn.commit()
         conn.close()
 
+    # ---Malinda--- #
+
+    # ---Maliesha--- #
     def save_performance_stats(self, s_count, t_count, s_time, t_time):
         conn = sqlite3.connect(self.db_name)
         cursor = conn.cursor()
@@ -80,3 +84,6 @@ class DatabaseManager:
         cursor.execute("DELETE FROM Player_Responses")
         conn.commit()
         conn.close()
+
+
+# ---Maliesha--- #
