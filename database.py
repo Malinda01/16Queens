@@ -7,69 +7,76 @@ class DatabaseManager:
         self.init_db()
 
     def init_db(self):
-        with sqlite3.connect(self.db_name) as conn:
-            cursor = conn.cursor()
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
 
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS Player_Responses (
-                    name TEXT,
-                    answer TEXT UNIQUE
-                )
+        cursor.execute(
             """
+            CREATE TABLE IF NOT EXISTS Player_Responses (
+                name TEXT,
+                answer TEXT UNIQUE
             )
+        """
+        )
 
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS Solutions (
-                    solution TEXT UNIQUE
-                )
+        cursor.execute(
             """
+            CREATE TABLE IF NOT EXISTS Solutions (
+                solution TEXT UNIQUE
             )
+        """
+        )
 
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS Program_Respond (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    sequential INTEGER,
-                    threaded INTEGER,
-                    time_taken_seq REAL,
-                    time_taken_thread REAL
-                )
+        cursor.execute(
             """
+            CREATE TABLE IF NOT EXISTS Program_Respond (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                sequential INTEGER,
+                threaded INTEGER,
+                time_taken_seq REAL,
+                time_taken_thread REAL
             )
+        """
+        )
 
-            conn.commit()
+        conn.commit()
+        conn.close()
 
     def save_player_response(self, name, answer):
-        with sqlite3.connect(self.db_name) as conn:
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO Player_Responses VALUES (?, ?)", (name, answer))
-            conn.commit()
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO Player_Responses VALUES (?, ?)", (name, answer))
+        conn.commit()
+        conn.close()
 
     def save_solution(self, solution):
-        with sqlite3.connect(self.db_name) as conn:
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO Solutions VALUES (?)", (solution,))
-            conn.commit()
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO Solutions VALUES (?)", (solution,))
+        conn.commit()
+        conn.close()
 
     def save_performance_stats(self, s_count, t_count, s_time, t_time):
-        with sqlite3.connect(self.db_name) as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO Program_Respond (sequential, threaded, time_taken_seq, time_taken_thread) VALUES (?,?,?,?)",
-                (s_count, t_count, s_time, t_time),
-            )
-            conn.commit()
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO Program_Respond (sequential, threaded, time_taken_seq, time_taken_thread) VALUES (?,?,?,?)",
+            (s_count, t_count, s_time, t_time),
+        )
+        conn.commit()
+        conn.close()
 
     def get_player_solution_count(self):
-        with sqlite3.connect(self.db_name) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM Player_Responses")
-            return cursor.fetchone()[0]
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM Player_Responses")
+        result = cursor.fetchone()[0]
+        conn.close()
+        return result
 
     def clear_player_responses(self):
-        with sqlite3.connect(self.db_name) as conn:
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM Player_Responses")
-            conn.commit()
+        conn = sqlite3.connect(self.db_name)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM Player_Responses")
+        conn.commit()
+        conn.close()
