@@ -1,3 +1,5 @@
+# ---Malinda--- #
+
 import unittest
 from logic import NQueensLogic
 
@@ -17,6 +19,9 @@ class TestNQueensLogic(unittest.TestCase):
         queens = [(0, 0), (0, 5)]
         self.assertFalse(self.logic.is_valid(queens))
 
+    # ---Malinda--- #
+
+    # ---Maliesha--- #
     def test_is_valid_same_column(self):
         # Queens on the same column (0)
         queens = [(0, 0), (5, 0)]
@@ -37,3 +42,4 @@ class TestNQueensLogic(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+# ---Maliesha--- #

@@ -1,3 +1,4 @@
+# ---Malinda--- #
 import unittest
 import sqlite3
 import os
@@ -29,6 +30,9 @@ class TestDatabaseManager(unittest.TestCase):
                     f"\nWarning: Could not remove {self.test_db}. A connection might still be open."
                 )
 
+    # ---Malinda--- #
+
+    # ---Maliesha--- #
     def test_initialization_creates_tables(self):
         # Explicitly open and close the connection for the test
         conn = sqlite3.connect(self.test_db)
@@ -61,3 +65,4 @@ class TestDatabaseManager(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+# ---Maliesha--- #

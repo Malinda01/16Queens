@@ -1,3 +1,4 @@
+# ---Malinda--- #
 import unittest
 import tkinter as tk
 from app import ChessApp
@@ -21,6 +22,9 @@ class TestChessApp(unittest.TestCase):
         self.app.db.db_name = "test_ui_chess.db"
         self.app.db.init_db()
 
+    # ---Malinda--- #
+
+    # ---Maliesha--- #
     def test_initial_state(self):
         # Check initial variables
         self.assertEqual(len(self.app.selected_queens), 0)
@@ -42,3 +46,4 @@ class TestChessApp(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+    # ---Maliesha--- #
