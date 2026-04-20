@@ -1,10 +1,12 @@
+# ---Malinda--- #
 import tkinter as tk
 from tkinter import messagebox
 import sqlite3
 from database import DatabaseManager
 from logic import NQueensLogic
 
-MAX_SOLUTIONS = 30
+
+MAX_SOLUTIONS = 5
 
 
 class ChessApp:
@@ -21,6 +23,9 @@ class ChessApp:
 
         self.setup_ui()
 
+    # ---Malinda--- #
+
+    # ---Maliesha--- #
     def setup_ui(self):
         self.root.configure(bg="#1e1e1e")
 
@@ -87,6 +92,9 @@ class ChessApp:
             command=self.performance,
         ).pack(side=tk.LEFT, padx=10)
 
+    # ---Maliesha--- #
+
+    # ---Malinda--- #
     def on_click(self, r, c):
         pos = (r, c)
 
@@ -138,6 +146,9 @@ class ChessApp:
         if current >= MAX_SOLUTIONS:
             self.show_clear_flag_popup()
 
+    # ---Malinda--- #
+
+    # ---Maliesha--- #
     def performance(self):
         demo = NQueensLogic(16, max_solutions=MAX_SOLUTIONS)
 
@@ -211,3 +222,4 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = ChessApp(root)
     root.mainloop()
+# ---Maliesha--- #
