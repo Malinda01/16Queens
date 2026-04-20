@@ -1,3 +1,4 @@
+# ---Malinda--- #
 import tkinter as tk
 from app import ChessApp
 
