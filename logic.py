@@ -4,7 +4,7 @@ import threading
 
 
 class NQueensLogic:
-    def __init__(self, size=16, max_solutions=30):
+    def __init__(self, size=16, max_solutions=20):
         self.size = size
         self.max_solutions = max_solutions
 

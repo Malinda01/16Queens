@@ -18,7 +18,7 @@ class ChessApp:
         self.root.geometry("1100x800")
 
         self.db = DatabaseManager()
-        self.logic = NQueensLogic(16)
+        self.logic = NQueensLogic(8)
         self.selected_queens = []
 
         self.setup_ui()
