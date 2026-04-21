@@ -1,4 +1,3 @@
-# ---Malinda--- #
 import tkinter as tk
 from tkinter import messagebox
 import sqlite3
@@ -23,9 +22,6 @@ class ChessApp:
 
         self.setup_ui()
 
-    # ---Malinda--- #
-
-    # ---Maliesha--- #
     def setup_ui(self):
         self.root.configure(bg="#1e1e1e")
 
@@ -92,9 +88,6 @@ class ChessApp:
             command=self.performance,
         ).pack(side=tk.LEFT, padx=10)
 
-    # ---Maliesha--- #
-
-    # ---Malinda--- #
     def on_click(self, r, c):
         pos = (r, c)
 
@@ -134,21 +127,18 @@ class ChessApp:
 
         try:
             self.db.save_player_response(name, answer)
-            messagebox.showinfo("Success", "Saved!")
-            self.reset_board()
         except sqlite3.IntegrityError:
             messagebox.showerror("Duplicate", "Solution already exists!")
             return
 
-        # Check AFTER insert
+        messagebox.showinfo("Success", "Saved!")
+        self.reset_board()
+
         current = self.db.get_player_solution_count()
 
         if current >= MAX_SOLUTIONS:
             self.show_clear_flag_popup()
 
-    # ---Malinda--- #
-
-    # ---Maliesha--- #
     def performance(self):
         demo = NQueensLogic(16, max_solutions=MAX_SOLUTIONS)
 
@@ -157,7 +147,6 @@ class ChessApp:
 
         self.db.save_performance_stats(s_count, t_count, s_time, t_time)
 
-        # Save all unique solutions
         all_solutions = set(map(str, s_solutions + t_solutions))
 
         for sol in all_solutions:
@@ -170,7 +159,10 @@ class ChessApp:
 
         messagebox.showinfo(
             "Performance",
-            f"Sequential: {s_time:.4f}s\nThreaded: {t_time:.4f}s\nFaster: {faster}",
+            f"Solutions Found: {len(all_solutions)} (Capped at {MAX_SOLUTIONS})\n\n"
+            f"Sequential: {s_time:.4f}s\n"
+            f"Threaded: {t_time:.4f}s\n\n"
+            f"Faster: {faster}",
         )
 
     def show_clear_flag_popup(self):
@@ -181,7 +173,7 @@ class ChessApp:
 
         tk.Label(
             popup,
-            text="30 solutions reached!\nYou can now reset the system.",
+            text="20 solutions reached!\nYou can now reset the system.",
             fg="white",
             bg="#1e1e1e",
             font=("Helvetica", 11),
@@ -189,6 +181,7 @@ class ChessApp:
 
         def clear_flag():
             self.db.clear_player_responses()
+            self.reset_board()
             messagebox.showinfo("Cleared", "Player responses reset!")
             popup.destroy()
 
@@ -222,4 +215,3 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = ChessApp(root)
     root.mainloop()
-# ---Maliesha--- #
