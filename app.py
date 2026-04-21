@@ -6,7 +6,7 @@ from database import DatabaseManager
 from logic import NQueensLogic
 
 
-MAX_SOLUTIONS = 5
+MAX_SOLUTIONS = 20
 
 
 class ChessApp:
