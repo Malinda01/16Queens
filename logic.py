@@ -16,103 +16,65 @@ class NQueensLogic:
                     return False
         return True
 
-    # ---------------- SEQUENTIAL ----------------
+    # ---------- SEQUENTIAL ----------
+    def backtrack_solver(self, row, current, results, solutions):
+        if results[0] >= self.max_solutions:
+            return
+
+        if len(current) == 8:
+            results[0] += 1
+            solutions.append(current.copy())
+            return
+
+        if row >= self.size:
+            return
+
+        for col in range(self.size):
+            temp = current + [(row, col)]
+            if self.is_valid(temp):
+                self.backtrack_solver(row + 1, temp, results, solutions)
+
     def run_sequential(self):
-        count = 0
+        results = [0]
         solutions = []
-
-        cols = set()
-        diag1 = set()  # r - c
-        diag2 = set()  # r + c
-
-        board = []
-
-        def backtrack(row):
-            nonlocal count
-
-            if count >= self.max_solutions:
-                return
-
-            if row == self.size:
-                solutions.append(board.copy())
-                count += 1
-                return
-
-            for col in range(self.size):
-                if col in cols or (row - col) in diag1 or (row + col) in diag2:
-                    continue
-
-                cols.add(col)
-                diag1.add(row - col)
-                diag2.add(row + col)
-                board.append((row, col))
-
-                backtrack(row + 1)
-
-                cols.remove(col)
-                diag1.remove(row - col)
-                diag2.remove(row + col)
-                board.pop()
-
         start = time.time()
-        backtrack(0)
-        end = time.time()
 
-        return count, end - start, solutions
+        self.backtrack_solver(0, [], results, solutions)
 
-    # ---------------- THREADED ----------------
+        return results[0], time.time() - start, solutions
+
+    # ---------- THREADED ----------
     def run_threaded(self):
-        total = 0
+        total = [0]
         solutions = []
         lock = threading.Lock()
-        stop_event = threading.Event()
-
+        threads = []
         start = time.time()
 
         def task(start_col):
-            nonlocal total
+            def backtrack(row, current):
+                with lock:
+                    if total[0] >= self.max_solutions:
+                        return
 
-            cols = {start_col}
-            diag1 = {0 - start_col}
-            diag2 = {0 + start_col}
-            board = [(0, start_col)]
-
-            def backtrack(row):
-                nonlocal total
-
-                if stop_event.is_set():
+                if len(current) == 8:
+                    with lock:
+                        if total[0] < self.max_solutions:
+                            total[0] += 1
+                            solutions.append(current.copy())
                     return
 
-                if row == self.size:
-                    with lock:
-                        if total < self.max_solutions:
-                            total += 1
-                            solutions.append(board.copy())
-
-                            if total >= self.max_solutions:
-                                stop_event.set()
+                if row >= self.size:
                     return
 
                 for col in range(self.size):
-                    if col in cols or (row - col) in diag1 or (row + col) in diag2:
-                        continue
+                    temp = current + [(row, col)]
+                    if self.is_valid(temp):
+                        backtrack(row + 1, temp)
 
-                    cols.add(col)
-                    diag1.add(row - col)
-                    diag2.add(row + col)
-                    board.append((row, col))
+            backtrack(1, [(0, start_col)])
 
-                    backtrack(row + 1)
-
-                    cols.remove(col)
-                    diag1.remove(row - col)
-                    diag2.remove(row + col)
-                    board.pop()
-
-            backtrack(1)
-
-        threads = []
-        for c in range(self.size):
+        for c in range(8):
             t = threading.Thread(target=task, args=(c,))
             threads.append(t)
             t.start()
@@ -120,6 +82,4 @@ class NQueensLogic:
         for t in threads:
             t.join()
 
-        end = time.time()
-
-        return total, end - start, solutions
+        return total[0], time.time() - start, solutions
